@@ -9,8 +9,22 @@
 std::stringstream buffer1;
 std::streambuf * old1;
 
+float triangleVertices [] = {
+        -0.5f, -0.5f, 0.0f, 
+         0.5f, -0.5f, 0.0f, 
+         0.0f, 0.5f, 0.0f, 
+    };
 
-
+float squareVertices[] = {
+         0.5f,  0.5f, 0.0f,  // top right
+         0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f,  // bottom left
+        -0.5f,  0.5f, 0.0f   // top left 
+    };
+int squareIndices[] = {  // note that we start from 0!
+        0, 1, 3,  // first Triangle
+        1, 2, 3   // second Triangle
+    };
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
@@ -277,11 +291,7 @@ void test_should_link_shaders(void)
 
 void test_should_fail_link_vertex_attributes(void)
 {
-    float vertices [] = {
-        -0.5f, -0.5f, 0.0f, 
-         0.5f, -0.5f, 0.0f, 
-         0.0f, 0.5f, 0.0f, 
-    };
+    
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
@@ -294,7 +304,7 @@ void test_should_fail_link_vertex_attributes(void)
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
-    bool result = myclass.linkingAttributes(vertices, sizeof(vertices));
+    bool result = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
        std::string text = buffer.str(); 
     const char *array = text.c_str();
 
@@ -308,11 +318,6 @@ void test_should_fail_link_vertex_attributes(void)
 
 void test_should_link_vertex_attributes(void)
 {
-      float vertices [] = {
-        -0.5f, -0.5f, 0.0f, 
-         0.5f, -0.5f, 0.0f, 
-         0.0f, 0.5f, 0.0f, 
-    };
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
@@ -325,7 +330,7 @@ void test_should_link_vertex_attributes(void)
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
-    bool result = myclass.linkingAttributes(vertices, sizeof(vertices));
+    bool result = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
     std::string text = buffer.str(); 
     const char *array = text.c_str();
 
@@ -341,11 +346,6 @@ void test_should_link_vertex_attributes(void)
 void test_should_draw_triangle()
 {
     
-    float vertices [] = {
-        -0.5f, -0.5f, 0.0f, 
-         0.5f, -0.5f, 0.0f, 
-         0.0f, 0.5f, 0.0f, 
-    };
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
@@ -358,7 +358,7 @@ void test_should_draw_triangle()
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
-    int vao = myclass.linkingAttributes(vertices, sizeof(vertices));
+    int vao = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
     myclass.drawTriangle(programShader, vao);
     
     std::string text = buffer.str(); 
@@ -375,16 +375,6 @@ void test_should_draw_triangle()
 void test_should_draw_square()
 {
     
-   float vertices[] = {
-         0.5f,  0.5f, 0.0f,  // top right
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left 
-    };
-     int indices[] = {  // note that we start from 0!
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
@@ -397,8 +387,8 @@ void test_should_draw_square()
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
-    int vao = myclass.linkingAttributes(vertices, sizeof(vertices));
-    int ebo = myclass.linkElementBuffer(indices, sizeof(indices));
+    int vao = myclass.linkingAttributes(squareVertices, sizeof(squareVertices));
+    int ebo = myclass.linkElementBuffer(squareIndices, sizeof(squareIndices));
     myclass.drawSquare(programShader, vao);
     
     std::string text = buffer.str(); 
