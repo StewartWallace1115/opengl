@@ -132,8 +132,8 @@ int Opengl_ults::linkShaders(int vertexShader, int fragementShader)
     if (!success)
     {
         glGetShaderInfoLog(shaderProgram, 512, NULL, infoLog);
-        errorCallback(0, ""); 
-        return 0;
+        std::cout<< infoLog <<std::endl;
+        return -1;
     }
 
     glDeleteShader(vertexShader);

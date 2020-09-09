@@ -25,6 +25,7 @@ int squareIndices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
     };
+
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
@@ -33,6 +34,13 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
     "}\n\0";
 
+const char *fragmentShaderSourceFail = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "oid main()\n"
+    "{\n"
+    "   FragColor = vec4(1.0f, 0.1f, 0.1f, 1.0f);\n"
+
+    "}\n\0";
 
 void setupOpenGLUtls(Opengl_ults* myclass)
 {
@@ -141,7 +149,8 @@ void test_should_create_window(void)
     glfwTerminate();
 }
 
-void test_should_fail_to_create_window(void) {
+void test_should_fail_to_create_window(void)
+{
 
     std::stringstream buffer;
     std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
@@ -157,8 +166,8 @@ void test_should_fail_to_create_window(void) {
     std::cout.rdbuf(old);
 }
 
-void test_should_close_window_succesffully(void) {
-
+void test_should_close_window_succesffully(void) 
+{
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
@@ -226,15 +235,14 @@ void test_should_fail_fragment_shader(void)
   
     GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    bool result = myclass.createFragmentShader(fragmentShaderSource);
+    bool result = myclass.createFragmentShader(fragmentShaderSourceFail);
     std::string text = buffer.str(); 
     const char *array = text.c_str();
 
     // Reset buffer
     std::cout.rdbuf(old);
-    //TEST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\n");  
-    //TEST_ASSERT_FALSE(result);
-    TEST_IGNORE_MESSAGE("To cause test to fail mess up syntax of fragment src or pass frag shader incorrect shader type");
+    TEST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\n");  
+    TEST_ASSERT_FALSE(result);
 }
 
 void test_should_create_fragment_shader(void)
@@ -257,13 +265,15 @@ void test_should_fail_shader_linking(void)
     const char* array;
 
     setupOpenGLUtls(&myclass);
-    int vertexShader = myclass.createFragmentShader(fragmentShaderSource);
-    int shaderProgram = myclass.linkShaders(vertexShader, -1);
+    int frag = myclass.createFragmentShader(fragmentShaderSourceFail);
+    int vertexShader = myclass.createVertexShader();
+
+    int shaderProgram = myclass.linkShaders(vertexShader, frag);
     array = cleanup();
 
     //TEST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\nFailed to create GLFW window\n");  
-    //TEST_ASSERT_EQUAL(shaderProgram, 0);
-    TEST_IGNORE_MESSAGE("To cause test to pass remove line 'out vec4 FragColor;\n' in frag source");
+    //TEST_ASSERT_EQUAL(0, shaderProgram);
+    TEST_IGNORE_MESSAGE("Trying to figure out how to fail");
 }
 
 void test_should_link_shaders(void)
@@ -374,7 +384,6 @@ void test_should_draw_triangle()
 
 void test_should_draw_square()
 {
-    
     Opengl_ults myclass;
     myclass.init();
     myclass.setupWindows(3,3);
