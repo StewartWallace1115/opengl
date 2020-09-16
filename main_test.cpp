@@ -42,31 +42,29 @@ const char *fragmentShaderSourceFail = "#version 330 core\n"
 
     "}\n\0";
 
-void setupOpenGLUtls(Opengl_ults* myclass)
+
+
+void setupOpenGLUtls(Opengl_ults& myclass)
 {
     //Opengl_ults myclass;
-    myclass->init();
-    myclass->setupWindows(3,3);
+    myclass.init();
+    myclass.setupWindows(3,3);
 
-    old1 = std::cout.rdbuf(buffer1.rdbuf());
   
-    GLFWwindow* window = myclass->createWindows(300, 300, "LearnOpenGL");
+    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 }
 
-const char* cleanup()
+std::string cleanup(std::stringstream * buffer2, std::streambuf * old2)
 {
-    std::string text = buffer1.str(); 
-    const char *array = text.c_str();
+    std::string text = buffer2->str(); 
 
     // Reset buffer
-    std::cout.flush();
 
-    std::cout.rdbuf(old1);
-    std::cout.flush();
-    return array;
+    std::cout.rdbuf(old2);
+  
+    return text;
 }
-
 
 void setUp(void) {
     // set stuff up here
@@ -151,7 +149,6 @@ void test_should_create_window(void)
 
 void test_should_fail_to_create_window(void)
 {
-
     std::stringstream buffer;
     std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
 
@@ -226,52 +223,46 @@ void test_should_create_vertex_shader(void)
 
 void test_should_fail_fragment_shader(void)
 {
+    const char* array;
     Opengl_ults myclass;
-    myclass.init();
-    myclass.setupWindows(3,3);
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
 
-    std::stringstream buffer;
-    std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-  
-    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    setupOpenGLUtls(myclass);
     bool result = myclass.createFragmentShader(fragmentShaderSourceFail);
-    std::string text = buffer.str(); 
-    const char *array = text.c_str();
-
-    // Reset buffer
-    std::cout.rdbuf(old);
-    TEST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\n");  
+    std::string temp = cleanup(& buffer2, old2);
+  
+    TEST_ASSERT_EQUAL_STRING(temp.c_str(), "Failed to create GLFW window\n");  
     TEST_ASSERT_FALSE(result);
 }
 
 void test_should_create_fragment_shader(void)
 {
     Opengl_ults myclass;
-    const char* array;
-    int result;
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
 
-    setupOpenGLUtls(&myclass);
-    result = myclass.createFragmentShader(fragmentShaderSource);
-    array = cleanup();
-
-    TEST_ASSERT_EQUAL_STRING(array, "");  
-    TEST_ASSERT_NOT_EQUAL(result,0);
+    setupOpenGLUtls(myclass);
+    bool result = myclass.createFragmentShader(fragmentShaderSource);
+    std::string temp = cleanup(& buffer2, old2);
+  
+    TEST_ASSERT_EQUAL_STRING(temp.c_str(), "");  
+    TEST_ASSERT_TRUE(result);
 }
 
 void test_should_fail_shader_linking(void)
 {
     Opengl_ults myclass;
-    const char* array;
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
 
-    setupOpenGLUtls(&myclass);
+    setupOpenGLUtls(myclass);
     int frag = myclass.createFragmentShader(fragmentShaderSourceFail);
     int vertexShader = myclass.createVertexShader();
 
     int shaderProgram = myclass.linkShaders(vertexShader, frag);
-    array = cleanup();
-
-    //TEST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\nFailed to create GLFW window\n");  
+    std::string temp = cleanup(& buffer2, old2);
+    //EST_ASSERT_EQUAL_STRING(array, "Failed to create GLFW window\nFailed to create GLFW window\n");  
     //TEST_ASSERT_EQUAL(0, shaderProgram);
     TEST_IGNORE_MESSAGE("Trying to figure out how to fail");
 }
@@ -279,25 +270,17 @@ void test_should_fail_shader_linking(void)
 void test_should_link_shaders(void)
 {
     Opengl_ults myclass;
-    myclass.init();
-    myclass.setupWindows(3,3);
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
 
-    std::stringstream buffer;
-    std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-  
-    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    setupOpenGLUtls(myclass);
+    int frag = myclass.createFragmentShader(fragmentShaderSource);
     int vertexShader = myclass.createVertexShader();
-    int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
-    int shaderProgram = myclass.linkShaders(vertexShader, fragmentShader);
-    std::string text = buffer.str(); 
-    const char *array = text.c_str();
 
-    // Reset buffer
-    std::cout.rdbuf(old);
-    TEST_ASSERT_EQUAL_STRING(array, "");  
-    TEST_ASSERT_NOT_EQUAL(shaderProgram, 0);
-}
+    int shaderProgram = myclass.linkShaders(vertexShader, frag);
+    std::string temp = cleanup(& buffer2, old2);
+    TEST_ASSERT_NOT_EQUAL(0, shaderProgram);
+ }
 
 void test_should_fail_link_vertex_attributes(void)
 {
@@ -316,7 +299,6 @@ void test_should_fail_link_vertex_attributes(void)
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
     bool result = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
        std::string text = buffer.str(); 
-    const char *array = text.c_str();
 
     // Reset buffer
     std::cout.rdbuf(old);
@@ -329,85 +311,56 @@ void test_should_fail_link_vertex_attributes(void)
 void test_should_link_vertex_attributes(void)
 {
     Opengl_ults myclass;
-    myclass.init();
-    myclass.setupWindows(3,3);
-
-    std::stringstream buffer;
-    std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
+    setupOpenGLUtls(myclass);
   
-    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
     bool result = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
-    std::string text = buffer.str(); 
-    const char *array = text.c_str();
+    std::string temp = cleanup(& buffer2, old2);
 
-    // Reset buffer
-    std::cout.rdbuf(old);
-
-    TEST_ASSERT_EQUAL_STRING(array, "");  
-    //TEST_ASSERT_TRUE(result);
+    TEST_ASSERT_NOT_EQUAL(result, 0);
 }
 
 
 
 void test_should_draw_triangle()
 {
-    
     Opengl_ults myclass;
-    myclass.init();
-    myclass.setupWindows(3,3);
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
 
-    std::stringstream buffer;
-    std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-  
-    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    setupOpenGLUtls(myclass);
+    
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
     int vao = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
     myclass.drawTriangle(programShader, vao);
-    
-    std::string text = buffer.str(); 
-    const char *array = text.c_str();
+    std::string temp = cleanup(& buffer2, old2);
 
-    // Reset buffer
-    std::cout.rdbuf(old);
-
-    TEST_ASSERT_EQUAL_STRING(array, "");  
-    //TEST_ASSERT_TRUE(result);
+    TEST_ASSERT_EQUAL_STRING(temp.c_str(), ""); 
 
 }
 
 void test_should_draw_square()
 {
     Opengl_ults myclass;
-    myclass.init();
-    myclass.setupWindows(3,3);
-
-    std::stringstream buffer;
-    std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-  
-    GLFWwindow* window = myclass.createWindows(300, 300, "LearnOpenGL");
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    std::stringstream buffer2;
+    std::streambuf * old2 = std::cout.rdbuf(buffer2.rdbuf());
+    setupOpenGLUtls(myclass);
+    
     int vertexShader = myclass.createVertexShader();
     int fragmentShader = myclass.createFragmentShader(fragmentShaderSource);
     int programShader = myclass.linkShaders(vertexShader, fragmentShader);
-    int vao = myclass.linkingAttributes(squareVertices, sizeof(squareVertices));
+    int vao = myclass.linkingAttributes(triangleVertices, sizeof(triangleVertices));
     int ebo = myclass.linkElementBuffer(squareIndices, sizeof(squareIndices));
     myclass.drawSquare(programShader, vao);
-    
-    std::string text = buffer.str(); 
-    const char *array = text.c_str();
+    std::string temp = cleanup(& buffer2, old2);
 
-    // Reset buffer
-    std::cout.rdbuf(old);
-    TEST_ASSERT_EQUAL_STRING(array, "");  
-    //TEST_ASSERT_TRUE(result);
-
+    TEST_ASSERT_EQUAL_STRING(temp.c_str(), "");  
 }
 
 
